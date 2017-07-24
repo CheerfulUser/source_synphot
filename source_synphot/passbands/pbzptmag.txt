@@ -1,8 +1,8 @@
-passband zpt
-R606     26.9927
-Z087     26.3949
-Y106     26.4078
-J129     26.3535
-W149     27.498
-H158     26.4095
-F184     25.9582
+passband                         zpt
+WFIRST/R606_Aeff_norm_new3.dat   26.9927
+WFIRST/Z087_Aeff_norm_new.dat    26.3949
+WFIRST/Y106_Aeff_norm_new.dat    26.4078
+WFIRST/J129_Aeff_norm_new.dat    26.3535
+WFIRST/W149_Aeff_norm_new.dat    27.498
+WFIRST/H158_Aeff_norm_new.dat    26.4095
+WFIRST/F184_Aeff_norm_new.dat    25.9582
