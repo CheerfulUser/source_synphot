@@ -1,8 +1,66 @@
-passband                         zpt
-WFIRST/R606_Aeff_norm_new3.dat   26.9927
-WFIRST/Z087_Aeff_norm_new.dat    26.3949
-WFIRST/Y106_Aeff_norm_new.dat    26.4078
-WFIRST/J129_Aeff_norm_new.dat    26.3535
-WFIRST/W149_Aeff_norm_new.dat    27.498
-WFIRST/H158_Aeff_norm_new.dat    26.4095
-WFIRST/F184_Aeff_norm_new.dat    25.9582
+passband                                                   obsmode   zpt
+WFIRST/R606_Aeff_norm_new3.dat                             R606      26.9927
+WFIRST/Z087_Aeff_norm_new.dat                              Z087      26.3949
+WFIRST/Y106_Aeff_norm_new.dat                              Y106      26.4078
+WFIRST/J129_Aeff_norm_new.dat                              J129      26.3535
+WFIRST/W149_Aeff_norm_new.dat                              W149      27.498 
+WFIRST/H158_Aeff_norm_new.dat                              H158      26.4095
+WFIRST/F184_Aeff_norm_new.dat                              F184      25.9582
+NIRCam/F070W_nircam_plus_ote_throughput_moda_sorted.txt    F070Wa    26.2713
+NIRCam/F070W_nircam_plus_ote_throughput_modb_sorted.txt    F070Wb    26.2733
+NIRCam/F090W_nircam_plus_ote_throughput_moda_sorted.txt    F090Wa    26.6667
+NIRCam/F090W_nircam_plus_ote_throughput_modb_sorted.txt    F090Wb    26.7177
+NIRCam/F115W_nircam_plus_ote_throughput_moda_sorted.txt    F115Wa    26.8046
+NIRCam/F115W_nircam_plus_ote_throughput_modb_sorted.txt    F115Wb    26.8118
+NIRCam/F140M_nircam_plus_ote_throughput_moda_sorted.txt    F140Ma    26.1774
+NIRCam/F140M_nircam_plus_ote_throughput_modb_sorted.txt    F140Mb    26.2063
+NIRCam/F150W2_nircam_plus_ote_throughput_moda_sorted.txt   F150W2a   28.417 
+NIRCam/F150W2_nircam_plus_ote_throughput_modb_sorted.txt   F150W2    28.4386
+NIRCam/F150W_nircam_plus_ote_throughput_moda_sorted.txt    F150Wa    27.044 
+NIRCam/F150W_nircam_plus_ote_throughput_modb_sorted.txt    F150Wb    27.0641
+NIRCam/F162M_nircam_plus_ote_throughput_moda_sorted.txt    F162Ma    26.2334
+NIRCam/F162M_nircam_plus_ote_throughput_modb_sorted.txt    F162Mb    26.2584
+NIRCam/F164N_nircam_plus_ote_throughput_moda_sorted.txt    F164Na    23.8848
+NIRCam/F164N_nircam_plus_ote_throughput_modb_sorted.txt    F164Nb    23.9123
+NIRCam/F182M_nircam_plus_ote_throughput_moda_sorted.txt    F182Ma    26.5696
+NIRCam/F182M_nircam_plus_ote_throughput_modb_sorted.txt    F182Mb    26.5922
+NIRCam/F187N_nircam_plus_ote_throughput_moda_sorted.txt    F187Na    23.9857
+NIRCam/F187N_nircam_plus_ote_throughput_modb_sorted.txt    F187Nb    24.0057
+NIRCam/F200W_nircam_plus_ote_throughput_moda_sorted.txt    F200Wa    27.2296
+NIRCam/F200W_nircam_plus_ote_throughput_modb_sorted.txt    F200Wb    27.2452
+NIRCam/F210M_nircam_plus_ote_throughput_moda_sorted.txt    F210Ma    26.2954
+NIRCam/F210M_nircam_plus_ote_throughput_modb_sorted.txt    F210Mb    26.3016
+NIRCam/F212N_nircam_plus_ote_throughput_moda_sorted.txt    F212Na    24.0911
+NIRCam/F212N_nircam_plus_ote_throughput_modb_sorted.txt    F212Nb    24.0879
+NIRCam/F250M_nircam_plus_ote_throughput_moda_sorted.txt    F250Ma    25.9067
+NIRCam/F250M_nircam_plus_ote_throughput_modb_sorted.txt    F250Mb    25.8332
+NIRCam/F277W_nircam_plus_ote_throughput_moda_sorted.txt    F277Wa    27.2977
+NIRCam/F277W_nircam_plus_ote_throughput_modb_sorted.txt    F277Wb    27.1944
+NIRCam/F300M_nircam_plus_ote_throughput_moda_sorted.txt    F300Ma    26.2916
+NIRCam/F300M_nircam_plus_ote_throughput_modb_sorted.txt    F300Mb    26.2462
+NIRCam/F322W2_nircam_plus_ote_throughput_moda_sorted.txt   F322Wa    NaN    
+NIRCam/F322W2_nircam_plus_ote_throughput_modb_sorted.txt   F322Wb    NaN    
+NIRCam/F323N_nircam_plus_ote_throughput_moda_sorted.txt    F323Na    23.6598
+NIRCam/F323N_nircam_plus_ote_throughput_modb_sorted.txt    F323Nb    23.6856
+NIRCam/F335M_nircam_plus_ote_throughput_moda_sorted.txt    F335Ma    26.4596
+NIRCam/F335M_nircam_plus_ote_throughput_modb_sorted.txt    F335Mb    26.3895
+NIRCam/F356W_nircam_plus_ote_throughput_moda_sorted.txt    F356Wa    27.3565
+NIRCam/F356W_nircam_plus_ote_throughput_modb_sorted.txt    F356Wb    27.3927
+NIRCam/F360M_nircam_plus_ote_throughput_moda_sorted.txt    F360Ma    26.503 
+NIRCam/F360M_nircam_plus_ote_throughput_modb_sorted.txt    F360Mb    26.5029
+NIRCam/F405N_nircam_plus_ote_throughput_moda_sorted.txt    F405Na    23.834 
+NIRCam/F405N_nircam_plus_ote_throughput_modb_sorted.txt    F405Nb    23.9979
+NIRCam/F410M_nircam_plus_ote_throughput_moda_sorted.txt    F410Ma    26.5354
+NIRCam/F410M_nircam_plus_ote_throughput_modb_sorted.txt    F410Mb    26.5697
+NIRCam/F430M_nircam_plus_ote_throughput_moda_sorted.txt    F430Ma    25.7226
+NIRCam/F430M_nircam_plus_ote_throughput_modb_sorted.txt    F430Mb    25.8542
+NIRCam/F444W_nircam_plus_ote_throughput_moda_sorted.txt    F444Wa    27.3505
+NIRCam/F444W_nircam_plus_ote_throughput_modb_sorted.txt    F444Wb    27.5101
+NIRCam/F460M_nircam_plus_ote_throughput_moda_sorted.txt    F460Ma    25.4787
+NIRCam/F460M_nircam_plus_ote_throughput_modb_sorted.txt    F460Mb    25.5891
+NIRCam/F466N_nircam_plus_ote_throughput_moda_sorted.txt    F466Na    23.6117
+NIRCam/F466N_nircam_plus_ote_throughput_modb_sorted.txt    F466Nb    23.7354
+NIRCam/F470N_nircam_plus_ote_throughput_moda_sorted.txt    F470Na    23.4446
+NIRCam/F470N_nircam_plus_ote_throughput_modb_sorted.txt    F470Nb    23.5978
+NIRCam/F480M_nircam_plus_ote_throughput_moda_sorted.txt    F480Ma    25.4916
+NIRCam/F480M_nircam_plus_ote_throughput_modb_sorted.txt    F480Mb    25.9498
