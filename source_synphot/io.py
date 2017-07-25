@@ -9,6 +9,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 import sys
 import os
+import warnings
 import argparse
 import pkg_resources
 import astropy.table as at
@@ -111,48 +112,69 @@ def get_pkgfile(infile):
     return pkgfile
 
 
-def get_passband(pb):
+def get_passband(pb, pbzp=None):
     """
     Read a passband
 
     Parameters
     ----------
-    sourcepb : str
+    pb : str
         pysynphot obsmode or obsmode listed in `pbzptmag.txt`
+    pbzp : float, optional
+        AB magnitude zeropoint of the passband
 
     Returns
     -------
-    pb : :py:class:`numpy.recarray`
-        Record array with the passband data.
-        Has ``dtype=[('wave', '<f8'), ('transmission', '<f8')]``
+    pb : :py:class:`pysynphot.ArrayBandpass` or :py:class:`pysynphot.obsbandpass.ObsModeBandpass`
+        The passband data.
+        Has ``dtype=[('wave', '<f8'), ('throughput', '<f8')]``
+    pbzp : float
+        passband AB zeropoint - potentially NaN if this was not supplied. If NaN
+        this can be computed assuming an AB source - i.e. a source with a flux
+        density of 3631 jy has magnitude = 0 in the bandpass.
 
     See Also
     --------
     :py:func:`astropy.table.Table.read`
+    :py:func:`pysynphot.ObsBandpass`
     """
-    zptmag = np.nan
+    if pbzp is None:
+        pbzp = np.nan
+
     try:
         out = S.ObsBandpass(pb)
+        pbzp = np.nan
     except ValueError as e:
         infile = os.path.join('passbands','pbzptmag.txt')
         pbzptfile = get_pkgfile(infile)
         pbzpt = at.Table.read(pbzptfile, format='ascii')
         ind = (pbzpt.obsmode == pb)
-        if len(pbzpt.passband[ind]) == 1:
+        nmatch_pb = len(pbzpt.passband[ind])
+        if nmatch_pb == 1:
             if not np.isnan(pbzpt.zpt[ind][0]):
                 pb = pbzpt.passband[ind][0]
-                zptmag = pbzpt.zpt[ind][0]
+                pbzp = pbzpt.zpt[ind][0]
             else:
-                # we got a passband, but not a zeropoint, which is pretty useless
-                message = 'Passband {} is listed in pbzptmag file, but zeropoint is NaN. Cannot use.'.format(pb)
-                raise RuntimeError(message)
+                pbzp = np.nan
+        elif nmatch_pb == 0:
+            # we'll just see if this passband is a file and load it as such
+            pass
         else:
             # pb is not unique
             message = 'Passband {} is not uniquely listed in pbzptmag file.'.format(pb)
             raise RuntimeError(message)
 
         if os.path.exists(pb):
-            pbdata = at.Table.read(pb, names=('wave','transmission'))
+            # we either loaded the passband name from the lookup table or we didn't get a match
+            pbdata = at.Table.read(pb, names=('wave','throughput'))
+            out = S.ArrayBandpass(pbdata['wave'], pbdata['throughput'], waveunits='Angstrom')
+    try:
+        pbzp = float(pbzp)
+    except TypeError as e:
+        message = 'Supplied zeropoint {} could not be interepreted as a float.'.format(zp)
+        warnings.warn(message, RuntimeWarning)
+        pbzp = np.nan
+    return out, pbzp
 
 
 def get_source(sourcespec):
