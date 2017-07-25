@@ -1,4 +1,4 @@
-passband                                                   obsmode   zpt
+passband                                                   obsmode   ABzpt
 WFIRST/R606_Aeff_norm_new3.dat                             R606      26.9927
 WFIRST/Z087_Aeff_norm_new.dat                              Z087      26.3949
 WFIRST/Y106_Aeff_norm_new.dat                              Y106      26.4078
