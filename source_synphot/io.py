@@ -226,6 +226,7 @@ def get_source(sourcespec):
                 message = 'Source temperature {} cannot be interpreted as a float'.format(sourcespec)
                 raise ValueError(message)
             bb = S.Blackbody(temp)
+            bb.convert('flam')
             spec = {'wave':bb.wave, 'flux':bb.flux, 'dflux':np.repeat(0., len(bb.wave))}
 
         # power-law spectrum
@@ -242,6 +243,7 @@ def get_source(sourcespec):
                 message = 'Power law index {} cannot be interpreted as a float'.format(sourcespec)
                 raise ValueError(message)
             pl = S.PowerLaw(refwave, plindex)
+            pl.convert('flam')
             spec = {'wave':pl.wave, 'flux':pl.flux, 'dflux':np.repeat(0., len(pl.wave))}
 
         # flat spectrum (in f_lam, not f_nu) normalized to some ABmag
@@ -253,6 +255,7 @@ def get_source(sourcespec):
                 message = 'AB mag {} cannot be interpreted as a float'.format(sourcespec)
                 raise ValueError(message)
             flat = S.FlatSpectrum(abmag, fluxunits='abmag')
+            flat.convert('flam')
             spec = {'wave':flat.wave, 'flux':flat.flux, 'dflux':np.repeat(0., len(flat.wave))}
 
         # a Castelli-Kurucz model
@@ -274,6 +277,7 @@ def get_source(sourcespec):
                 message = 'Surface gravity {} cannot be interpreted as a float'.format(sourcespec)
                 raise ValueError(message)
             ckmod = S.Icat('ck04models',teff, logZ,logg)
+            ckmod.convert('flam')
             sec = {'wave':ckmod.wave, 'flux':ckmod.flux, 'dflux':np.repeat(0., len(ckmod.wave))}
 
         # else give up
