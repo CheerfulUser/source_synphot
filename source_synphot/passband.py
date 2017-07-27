@@ -37,9 +37,9 @@ def synflux(spec, pb):
 
         Uses :py:func:`numpy.trapz` for interpolation.
     """
-    s = spec.resample(pb.wave)
-    n = np.trapz(s.flux*s.wave*pb.throughput, s.wave)
-    d = np.trapz(s.wave*pb.throughput, s.wave)
+    flux = spec.sample(pb.wave)
+    n = np.trapz(flux*pb.wave*pb.throughput, pb.wave)
+    d = np.trapz(pb.wave*pb.throughput, pb.wave)
     out = n/d
     return out
 
@@ -112,6 +112,9 @@ def get_pb_zpt(pb, reference='AB', model_mag=None):
     else:
         refspec    = S.Vega
         mag_type= 'vegamag'
+
+    refspec.convert('flam')
+
     if model_mag is None:
         ob = S.Observation(refspec, pb)
         model_mag = ob.effstim(mag_type)
