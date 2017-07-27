@@ -12,6 +12,7 @@ import os
 import warnings
 import argparse
 import pkg_resources
+import numpy as np
 import astropy.table as at
 import pysynphot as S
 
@@ -103,9 +104,7 @@ def get_pkgfile(infile):
         determine the location to a file included with the package, such as the
         passband definition file
     """
-
     pkgfile = pkg_resources.resource_filename('source_synphot',infile)
-
     if not os.path.exists(pkgfile):
         message = 'Could not find package file {}'.format(pkgfile)
         raise IOError(message)
@@ -148,14 +147,16 @@ def get_passband(pb, pbzp=None):
         infile = os.path.join('passbands','pbzptmag.txt')
         pbzptfile = get_pkgfile(infile)
         pbzpt = at.Table.read(pbzptfile, format='ascii')
-        ind = (pbzpt.obsmode == pb)
-        nmatch_pb = len(pbzpt.passband[ind])
+        ind = (pbzpt['obsmode'] == pb)
+        nmatch_pb = len(pbzpt['passband'][ind])
         if nmatch_pb == 1:
-            if not np.isnan(pbzpt.zpt[ind][0]):
-                pb = pbzpt.passband[ind][0]
-                pbzp = pbzpt.zpt[ind][0]
+            if not np.isnan(pbzpt['ABzpt'][ind][0]):
+                pb = pbzpt['passband'][ind][0]
+                pbzp = pbzpt['ABzpt'][ind][0]
             else:
                 pbzp = np.nan
+            pb = os.path.join('passbands', pb)
+            pb = get_pkgfile(pb)
         elif nmatch_pb == 0:
             # we'll just see if this passband is a file and load it as such
             pass
@@ -166,7 +167,7 @@ def get_passband(pb, pbzp=None):
 
         if os.path.exists(pb):
             # we either loaded the passband name from the lookup table or we didn't get a match
-            pbdata = at.Table.read(pb, names=('wave','throughput'))
+            pbdata = at.Table.read(pb, names=('wave','throughput'), format='ascii')
             out = S.ArrayBandpass(pbdata['wave'], pbdata['throughput'], waveunits='Angstrom')
     try:
         pbzp = float(pbzp)
