@@ -51,7 +51,7 @@ def get_options(args=None):
             help="Specify source spectrum - relative F_lam")
     source_input.add_argument('--sourcez', required=False, type=float, default=0.,\
             help='Specify redshift of source spectrum')
-    source_input.add_argument('--sourcepb', required=False,\
+    source_input.add_argument('--sourcepb', required=False, type=str,\
             help="Specify source passband")
     source_input.add_argument('--sourcemag', required=False, type=float, default=0.,\
             help="Specify source magnitude in passband")
@@ -75,6 +75,8 @@ def get_options(args=None):
     if args.targetz < 0:
         message = 'Target CMB frame redshift cannot be less than 0'
         raise ValueError(message)
+
+    args.sourcepb = str(args.sourcepb)
 
     return args
 
@@ -150,6 +152,7 @@ def get_passband(pb, pbzp=None):
         ind = (pbzpt['obsmode'] == pb)
         nmatch_pb = len(pbzpt['passband'][ind])
         if nmatch_pb == 1:
+            pbname = pb
             if not np.isnan(pbzpt['ABzpt'][ind][0]):
                 pb = pbzpt['passband'][ind][0]
                 pbzp = pbzpt['ABzpt'][ind][0]
@@ -159,16 +162,27 @@ def get_passband(pb, pbzp=None):
             pb = get_pkgfile(pb)
         elif nmatch_pb == 0:
             # we'll just see if this passband is a file and load it as such
+            pbname = None
+            message = 'Passband {} is not listed in pbzptmag file.'.format(pb)
             pass
         else:
             # pb is not unique
+            out = None
             message = 'Passband {} is not uniquely listed in pbzptmag file.'.format(pb)
-            raise RuntimeError(message)
 
         if os.path.exists(pb):
+            if pbname is None:
+                pbname = os.path.basename(pb)
             # we either loaded the passband name from the lookup table or we didn't get a match
             pbdata = at.Table.read(pb, names=('wave','throughput'), format='ascii')
-            out = S.ArrayBandpass(pbdata['wave'], pbdata['throughput'], waveunits='Angstrom')
+            out = S.ArrayBandpass(pbdata['wave'], pbdata['throughput'], waveunits='Angstrom', name=pbname)
+        else:
+            out = None
+            message = 'Passband {} could not be loaded from any source.'.format(pb)
+
+    if out is None:
+        raise ValueError(message)
+
     try:
         pbzp = float(pbzp)
     except TypeError as e:
