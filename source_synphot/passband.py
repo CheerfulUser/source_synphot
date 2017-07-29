@@ -6,8 +6,10 @@ routines
 
 from __future__ import absolute_import
 from __future__ import unicode_literals
+from . import io
 import numpy as np
 import pysynphot as S
+from collections import OrderedDict
 
 def synflux(spec, pb):
     """
@@ -121,5 +123,30 @@ def get_pb_zpt(pb, reference='AB', model_mag=None):
     
     synphot_mag = synphot(refspec, pb, zp=0.)
     outzp = model_mag - synphot_mag
-
     return outzp
+
+
+def get_pbs(pbnames, model_mags, model='AB'):
+
+    pbs = OrderedDict()
+    if np.isscalar(pbnames):
+        pbnames = np.array(pbnames, ndmin=1)
+    else:
+        pbnames = np.array(pbnames).flatten()
+    npb = len(pbnames)
+
+    if np.isscalar(model_mags):
+        model_mags = np.repeat(model_mags, npb)
+    else:
+        model_mags = np.array(model_mags).flatten()
+
+    if len(model_mags) != npb:
+        message = 'Model mags and pbnames must be 1-D arrays with the same shape'
+        raise ValueError(message)
+
+    for i, pb, mag in enumerate(zip(pbnames, model_mags)):
+        thispb, _ = io.get_passband(pb)
+        thispbzp = passband.get_pb_zpt(sourcepb, model_mag=mag, reference=model)
+        pbs[pb] = thispb, thispbzp
+
+    return pbs
