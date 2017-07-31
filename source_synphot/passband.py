@@ -6,6 +6,7 @@ routines
 
 from __future__ import absolute_import
 from __future__ import unicode_literals
+import warnings
 from . import io
 import numpy as np
 import pysynphot as S
@@ -146,7 +147,12 @@ def get_pbs(pbnames, model_mags, model='AB'):
 
     for i, pbmag in enumerate(zip(pbnames, model_mags)):
         pb, mag = pbmag
-        thispb, _ = io.get_passband(pb)
+        try:
+            thispb, _ = io.get_passband(pb)
+        except Exception as e:
+            message = 'Passband {} not loaded'.format(pb)
+            warnings.warn(message, RuntimeWarning)
+            continue
         thispbzp = get_pb_zpt(thispb, model_mag=mag, reference=model)
         pbs[pb] = thispb, thispbzp
 
