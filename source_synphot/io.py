@@ -159,7 +159,13 @@ def get_passband(pb, pbzp=None):
             else:
                 pbzp = np.nan
             pb = os.path.join('passbands', pb)
-            pb = get_pkgfile(pb)
+            try:
+                pb = get_pkgfile(pb)
+            except (OSError, IOError) as e:
+                out = None
+                pbzp = np.nan
+                message = 'Passband {} not located in the passbands directory'.format(pb)
+                pass
         elif nmatch_pb == 0:
             # we'll just see if this passband is a file and load it as such
             pbname = None
