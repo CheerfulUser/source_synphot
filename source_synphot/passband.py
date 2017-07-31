@@ -144,9 +144,10 @@ def get_pbs(pbnames, model_mags, model='AB'):
         message = 'Model mags and pbnames must be 1-D arrays with the same shape'
         raise ValueError(message)
 
-    for i, pb, mag in enumerate(zip(pbnames, model_mags)):
+    for i, pbmag in enumerate(zip(pbnames, model_mags)):
+        pb, mag = pbmag
         thispb, _ = io.get_passband(pb)
-        thispbzp = passband.get_pb_zpt(sourcepb, model_mag=mag, reference=model)
+        thispbzp = get_pb_zpt(thispb, model_mag=mag, reference=model)
         pbs[pb] = thispb, thispbzp
 
     return pbs
