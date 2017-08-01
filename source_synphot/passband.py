@@ -128,6 +128,48 @@ def get_pb_zpt(pb, reference='AB', model_mag=None):
 
 
 def get_pbs(pbnames, model_mags, model='AB'):
+    """
+    Loads passbands, and calibrates their zeropoints so that ``model`` has
+    magnitude ``model_mags`` through them.
+
+    Parameters
+    ----------
+    pbnames : array-like
+        The passband names. Passed to :py:func:`source_synphot.io.get_passband`
+    model_mags : array-like
+        The magnitudes of ``model`` in the passbands ``pbnames``
+    model : str, optional
+        The reference model for the passband. Either ``'AB'`` or ``'Vega'``.
+        The same reference model is used for all the passbands. If the
+        passbands have different standards they are calibrated to, then call
+        the function twice, and concatenate the output.
+
+    Returns
+    -------
+    pbs : dict
+        The dictionary of passband transmissions and zeropoints, such that
+        :py:func:`synphot` of ``model`` through passband ``pbnames`` returns
+        magnitude ``model_mags``.
+
+    Raises
+    ------
+    ValueError
+        If the number of ``model_mags`` does not match the number of passbands
+        in ``pbnames``
+
+    Notes
+    -----
+        The passband zeropoint computed here is what number must be used with
+        :py:func:`synphot` and ``model``. It is not what observers think of as
+        the zeropoint, which invariable encapsulates the telescope collecting
+        area.
+
+    See Also
+    --------
+    :py:func:`source_synphot.io.get_passband`
+    :py:func:`source_synphot.passband.synflux`
+    :py:func:`source_synphot.passband.synphot`
+    """
 
     pbs = OrderedDict()
     if np.isscalar(pbnames):
