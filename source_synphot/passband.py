@@ -57,7 +57,6 @@ def synphot(spec, pb, zp=0.):
         The spectrum. Must have ``dtype=[('wave', '<f8'), ('flux', '<f8')]``
     pb : array-like
         The passband transmission.
-        Must satisfy ``pb.shape == spec[ind].flux.shape``
     zp : float, optional
         The zeropoint to apply to the synthetic flux
 
@@ -73,6 +72,40 @@ def synphot(spec, pb, zp=0.):
     flux = synflux(spec, pb)
     m = -2.5*np.log10(flux) + zp
     return m
+
+
+def syncolor(spec, pb1, pb2, zp1=0., zp2=0.):
+    """
+    Compute the synthetic color of spectrum ``spec`` between passbands ``pb1``
+    and ``pb2``
+
+    Parameters
+    ----------
+    spec : :py:class:`pysynphot.ArraySpectrum`
+        The spectrum. Must have ``dtype=[('wave', '<f8'), ('flux', '<f8')]``
+    pb1 : array-like
+        Passband 1 transmission.
+    pb2 : array-like
+        Passband 2 transmission.
+    zp1 : float, optional
+        The zeropoint to apply to the synthetic flux through passband ``pb1``
+    zp2 : float, optional
+        The zeropoint to apply to the synthetic flux through passband ``pb2``
+
+    Returns
+    -------
+    mag : float
+        The synthetic magnitude of the spectrum through the passband
+
+    See Also
+    --------
+    :py:func:`source_synphot.passband.synflux`
+    """
+    flux1 = synflux(spec, pb1)
+    m1 = -2.5*np.log10(flux1) + zp1
+    flux2 = synflux(spec, pb2)
+    m2 = -2.5*np.log10(flux2) + zp2
+    return m1-m2
 
 
 def get_pb_zpt(pb, reference='AB', model_mag=None):
