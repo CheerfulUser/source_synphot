@@ -235,6 +235,7 @@ def get_source(sourcespec):
     """
     if os.path.exists(sourcespec):
         spec = at.Table.read(sourcespec, names=('wave','flux','dflux'))
+        #TODO preprocess the spectrum here
     else:
         # assume sourcespec is a string and parse it, trying to interpret as:
         # simple blackbody spectrum
@@ -247,7 +248,7 @@ def get_source(sourcespec):
                 raise ValueError(message)
             bb = S.Blackbody(temp)
             bb.convert('flam')
-            spec = {'wave':bb.wave, 'flux':bb.flux, 'dflux':np.repeat(0., len(bb.wave))}
+            spec = {'wave':bb.wave, 'flux':bb.flux}
 
         # power-law spectrum
         elif sourcespec.startswith('PL'):
@@ -264,7 +265,7 @@ def get_source(sourcespec):
                 raise ValueError(message)
             pl = S.PowerLaw(refwave, plindex)
             pl.convert('flam')
-            spec = {'wave':pl.wave, 'flux':pl.flux, 'dflux':np.repeat(0., len(pl.wave))}
+            spec = {'wave':pl.wave, 'flux':pl.flux}
 
         # flat spectrum (in f_lam, not f_nu) normalized to some ABmag
         elif sourcespec.startswith('Flat'):
@@ -276,7 +277,7 @@ def get_source(sourcespec):
                 raise ValueError(message)
             flat = S.FlatSpectrum(abmag, fluxunits='abmag')
             flat.convert('flam')
-            spec = {'wave':flat.wave, 'flux':flat.flux, 'dflux':np.repeat(0., len(flat.wave))}
+            spec = {'wave':flat.wave, 'flux':flat.flux}
 
         # a Castelli-Kurucz model
         elif sourcespec.startswith('ckmod'):
@@ -298,12 +299,11 @@ def get_source(sourcespec):
                 raise ValueError(message)
             ckmod = S.Icat('ck04models',teff, logZ,logg)
             ckmod.convert('flam')
-            sec = {'wave':ckmod.wave, 'flux':ckmod.flux, 'dflux':np.repeat(0., len(ckmod.wave))}
+            spec = {'wave':ckmod.wave, 'flux':ckmod.flux}
 
         # else give up
         else:
             message = 'Source spectrum {} cannot be parsed as input file or pre-defined type (BB, PL, Flat)'.format(sourcespec)
             raise ValueError(message)
-
-    spec = np.rec.fromarrays((spec['wave'], spec['flux'], spec['dflux']), names='wave,flux,dflux')
+    spec = S.ArraySpectrum(spec['wave'], spec['flux'], name=sourcespec)
     return spec
