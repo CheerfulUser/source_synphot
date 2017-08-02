@@ -1,6 +1,6 @@
 # -*- coding: UTF-8 -*-
 """
-Instrumental throughput models and calibration and synthetic photometry
+Instrumental throughput models,  calibration and synthetic photometry
 routines
 """
 
@@ -100,6 +100,7 @@ def syncolor(spec, pb1, pb2, zp1=0., zp2=0.):
     See Also
     --------
     :py:func:`source_synphot.passband.synflux`
+    :py:func:`source_synphot.passband.synphot`
     """
     flux1 = synflux(spec, pb1)
     m1 = -2.5*np.log10(flux1) + zp1
@@ -121,21 +122,26 @@ def get_pb_zpt(pb, reference='AB', model_mag=None):
     reference : str, optional
         The name of the reference spectrophotometric standard to use to determine the passband zeropoint.
         'AB' or 'Vega' (default: 'AB')
-    model_mag : float, optional 
+    model_mag : float, optional
         The magnitude of the reference spectrophotometric standard in the passband.
         default = None
 
     Returns
     -------
     pbzp : float
-        passband AB zeropoint 
-        
+        passband AB zeropoint
+
     Raises
     ------
     RuntimeError
         If the passband and reference standard do not overlap
     ValueError
         If the reference model_mag is invalid
+
+    See Also
+    --------
+    :py:func:`source_synphot.passband.synflux`
+    :py:func:`source_synphot.passband.synphot`
     """
 
     # setup the photometric system by defining the standard and corresponding magnitude system
@@ -154,13 +160,13 @@ def get_pb_zpt(pb, reference='AB', model_mag=None):
     if model_mag is None:
         ob = S.Observation(refspec, pb)
         model_mag = ob.effstim(mag_type)
-    
+
     synphot_mag = synphot(refspec, pb, zp=0.)
     outzp = model_mag - synphot_mag
     return outzp
 
 
-def get_pbs(pbnames, model_mags, model='AB'):
+def load_pbs(pbnames, model_mags, model='AB'):
     """
     Loads passbands, and calibrates their zeropoints so that ``model`` has
     magnitude ``model_mags`` through them.
@@ -168,7 +174,7 @@ def get_pbs(pbnames, model_mags, model='AB'):
     Parameters
     ----------
     pbnames : array-like
-        The passband names. Passed to :py:func:`source_synphot.io.get_passband`
+        The passband names. Passed to :py:func:`source_synphot.io.read_passband`
     model_mags : array-like
         The magnitudes of ``model`` in the passbands ``pbnames``
     model : str, optional
@@ -199,9 +205,8 @@ def get_pbs(pbnames, model_mags, model='AB'):
 
     See Also
     --------
-    :py:func:`source_synphot.io.get_passband`
-    :py:func:`source_synphot.passband.synflux`
-    :py:func:`source_synphot.passband.synphot`
+    :py:func:`source_synphot.io.read_passband`
+    :py:func:`source_synphot.passband.get_pb_zpt`
     """
 
     pbs = OrderedDict()
@@ -223,7 +228,7 @@ def get_pbs(pbnames, model_mags, model='AB'):
     for i, pbmag in enumerate(zip(pbnames, model_mags)):
         pb, mag = pbmag
         try:
-            thispb, _ = io.get_passband(pb)
+            thispb, _ = io.read_passband(pb)
         except Exception as e:
             message = 'Passband {} not loaded'.format(pb)
             warnings.warn(message, RuntimeWarning)

@@ -1,7 +1,7 @@
 # -*- coding: UTF-8 -*-
 """
-I/O methods. All the submodules of the source_synphot package use this module for
-almost all I/O operations.
+I/O methods. All the submodules of the source_synphot package use this module
+for I/O operations, but they are typically not directly useful themselves.
 """
 
 from __future__ import absolute_import
@@ -113,9 +113,10 @@ def get_pkgfile(infile):
     return pkgfile
 
 
-def get_passband(pb, pbzp=None):
+def read_passband(pb, pbzp=None):
     """
-    Read a passband
+    Read a passband.
+
 
     Parameters
     ----------
@@ -133,6 +134,13 @@ def get_passband(pb, pbzp=None):
         passband AB zeropoint - potentially NaN if this was not supplied. If NaN
         this can be computed assuming an AB source - i.e. a source with a flux
         density of 3631 jy has magnitude = 0 in the bandpass.
+
+    Notes
+    -----
+        Note that this is a straight read of a single passband from a file. The
+        zeropoint returned is whatever was provided (even if the value is not
+        useful) or NaN. To load the passband and get the correct zeropoint, use
+        :py:func:`source_synphot.passband.load_pbs`
 
     See Also
     --------
@@ -198,7 +206,7 @@ def get_passband(pb, pbzp=None):
     return out, pbzp
 
 
-def get_source(sourcespec):
+def read_source(sourcespec):
     """
     Read a spectrum
 

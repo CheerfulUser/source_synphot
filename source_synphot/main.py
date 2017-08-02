@@ -14,5 +14,5 @@ def main(inargs=None):
     pbnames  = pbzpt.obsmode
     pbnames = [x.decode('latin-1') for x in pbnames]
 
-    pbs = passband.get_pbs(pbnames, 0.)
+    pbs = passband.load_pbs(pbnames, 0.)
     print(pbs)
