@@ -158,7 +158,7 @@ def synphot_over_redshifts(spec, redshifts, pb, zp=0.):
     return mags
 
 
-def syncolor_over_redshifts(spec, redshifts, pb, zp=0.):
+def syncolor_over_redshifts(spec, redshifts, pb1, pb2, zp1=0., zp2=0.):
     """
     Compute the synthetic color of spectrum ``spec`` through passband ``pb`` over some ``redshifts``
 
@@ -195,7 +195,7 @@ def syncolor_over_redshifts(spec, redshifts, pb, zp=0.):
             cols.append(np.nan)
             continue
         this_spec_z = spec.redshift(z)
-        col = synphot(this_spec_z, pb1, ,pb2, zp1=zp1, zp2=zp2)
+        col = syncolor(this_spec_z, pb1, pb2, zp1=zp1, zp2=zp2)
         cols.append(col)
     cols = np.array(cols)
     return cols
