@@ -40,11 +40,11 @@ def synflux(spec, pb):
 
         Uses :py:func:`numpy.trapz` for interpolation.
     """
-    overlap = pb.check_overlap(spec.wave)
+    overlap = pb.check_overlap(spec)
     if overlap == 'none':
         return np.nan
     elif overlap == 'partial':
-        if pb.check_sig(spec.wave):
+        if pb.check_sig(spec):
             pass
         else:
             return np.nan
