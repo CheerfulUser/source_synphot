@@ -40,6 +40,16 @@ def synflux(spec, pb):
 
         Uses :py:func:`numpy.trapz` for interpolation.
     """
+    overlap = pb.check_overlap(spec.wave)
+    if overlap == 'none':
+        return np.nan
+    elif overlap == 'partial':
+        if pb.check_sig(spec.wave):
+            pass
+        else:
+            return np.nan
+    else:
+        pass
     flux = spec.sample(pb.wave)
     n = np.trapz(flux*pb.wave*pb.throughput, pb.wave)
     d = np.trapz(pb.wave*pb.throughput, pb.wave)
@@ -55,7 +65,7 @@ def synphot(spec, pb, zp=0.):
     ----------
     spec : :py:class:`pysynphot.ArraySpectrum`
         The spectrum. Must have ``dtype=[('wave', '<f8'), ('flux', '<f8')]``
-    pb : array-like
+    pb : :py:class:`pysynphot.ArrayBandpass` or :py:class:`pysynphot.obsbandpass.ObsModeBandpass`
         The passband transmission.
     zp : float, optional
         The zeropoint to apply to the synthetic flux
@@ -83,9 +93,9 @@ def syncolor(spec, pb1, pb2, zp1=0., zp2=0.):
     ----------
     spec : :py:class:`pysynphot.ArraySpectrum`
         The spectrum. Must have ``dtype=[('wave', '<f8'), ('flux', '<f8')]``
-    pb1 : array-like
+    pb1 : :py:class:`pysynphot.ArrayBandpass` or :py:class:`pysynphot.obsbandpass.ObsModeBandpass`
         Passband 1 transmission.
-    pb2 : array-like
+    pb2 : :py:class:`pysynphot.ArrayBandpass` or :py:class:`pysynphot.obsbandpass.ObsModeBandpass`
         Passband 2 transmission.
     zp1 : float, optional
         The zeropoint to apply to the synthetic flux through passband ``pb1``
@@ -107,6 +117,88 @@ def syncolor(spec, pb1, pb2, zp1=0., zp2=0.):
     flux2 = synflux(spec, pb2)
     m2 = -2.5*np.log10(flux2) + zp2
     return m1-m2
+
+
+def synphot_over_redshifts(spec, redshifts, pb, zp=0.):
+    """
+    Compute the synthetic magnitude of spectrum ``spec`` through passband ``pb`` over some ``redshifts``
+
+    Parameters
+    ----------
+    spec : :py:class:`pysynphot.ArraySpectrum`
+        The spectrum. Must have ``dtype=[('wave', '<f8'), ('flux', '<f8')]``
+    redshifts: array-like
+        The array of redshifts
+    pb : :py:class:`pysynphot.ArrayBandpass` or :py:class:`pysynphot.obsbandpass.ObsModeBandpass`
+        The passband transmission.
+    zp : float, optional
+        The zeropoint to apply to the synthetic flux
+
+    Returns
+    -------
+    mags : array-like
+        The synthetic magnitudes of the spectrum through the passband at
+        `redshifts` Output is the same shape as redshifts, with entries where
+        the spectra does not overlap the passband set to NaN.
+
+    See Also
+    --------
+    :py:func:`source_synphot.passband.synflux`
+    :py:func:`source_synphot.passband.synphot`
+    """
+    mags = []
+    for z in redshifts:
+        if z < 0:
+            mags.append(np.nan)
+            continue
+        this_spec_z = spec.redshift(z)
+        mag = synphot(this_spec_z, pb, zp=zp)
+        mags.append(mag)
+    mags = np.array(mags)
+    return mags
+
+
+def syncolor_over_redshifts(spec, redshifts, pb, zp=0.):
+    """
+    Compute the synthetic color of spectrum ``spec`` through passband ``pb`` over some ``redshifts``
+
+    Parameters
+    ----------
+    spec : :py:class:`pysynphot.ArraySpectrum`
+        The spectrum. Must have ``dtype=[('wave', '<f8'), ('flux', '<f8')]``
+    redshifts: array-like
+        The array of redshifts
+    pb1 : :py:class:`pysynphot.ArrayBandpass` or :py:class:`pysynphot.obsbandpass.ObsModeBandpass`
+        The blue passband transmission.
+    pb2 : :py:class:`pysynphot.ArrayBandpass` or :py:class:`pysynphot.obsbandpass.ObsModeBandpass`
+        The red passband transmission.
+    zp1 : float, optional
+        The zeropoint to apply to the synthetic flux in passband `pb1`
+    zp2 : float, optional
+        The zeropoint to apply to the synthetic flux in passband `pb2`
+
+    Returns
+    -------
+    cols : array-like
+        The synthetic colors of the spectrum through the passbands at
+        `redshifts` Output is the same shape as redshifts, with entries where
+        the spectra does not overlap the passbands set to NaN.
+
+    See Also
+    --------
+    :py:func:`source_synphot.passband.synflux`
+    :py:func:`source_synphot.passband.synphot`
+    """
+    cols = []
+    for z in redshifts:
+        if z < 0:
+            cols.append(np.nan)
+            continue
+        this_spec_z = spec.redshift(z)
+        col = synphot(this_spec_z, pb1, ,pb2, zp1=zp1, zp2=zp2)
+        cols.append(col)
+    cols = np.array(cols)
+    return cols
 
 
 def get_pb_zpt(pb, reference='AB', model_mag=None):
