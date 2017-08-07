@@ -28,6 +28,14 @@ source\_synphot\.passband module
     :undoc-members:
     :show-inheritance:
 
+source\_synphot\.source module
+------------------------------
+
+.. automodule:: source_synphot.source
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 
 Module contents
 ---------------
