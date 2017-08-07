@@ -213,9 +213,7 @@ def read_source(sourcespec):
     Parameters
     ----------
     sourcespec : str
-        Filename of the ASCII file. Must have columns ``wave``, ``flux``,
-        ``flux_err`` or source spectrum specification string. Acceptable
-        options are:
+        Source spectrum specification string. Acceptable options are:
          * BB<Temperature>
          * PL<Reference Wave Angstrom>_<PL Index>
          * Flat<AB magnitude>
@@ -223,10 +221,15 @@ def read_source(sourcespec):
 
     Returns
     -------
-    source : :py:class:`numpy.recarray`
-        Record array with the spectrum data.
-        Has ``dtype=[('wave', '<f8'), ('flux', '<f8'), ('flux_err', '<f8')]``
-        `flux_err` is set to 0. for pre-defined sources.
+    source : :py:class:`pysynphot.spectrum.ArraySourceSpectrum`
+        The spectrum data.
+        Has ``dtype=[('wave', '<f8'), ('flux', '<f8')]``
+
+    Raises
+    ------
+    ValueError
+        If attempting to use this routine to load a file, or if source spectrum
+        specification string is invalid
 
     Notes
     -----
@@ -237,13 +240,10 @@ def read_source(sourcespec):
        properly typecast into float. Making sure the value is accepted is left
        to the user.
 
-    See Also
-    --------
-    :py:func:`astropy.table.Table.read`
     """
     if os.path.exists(sourcespec):
-        spec = at.Table.read(sourcespec, names=('wave','flux','dflux'))
-        #TODO preprocess the spectrum here
+        message = 'File spectrum parsing is complex and requires pre-processing. Use source_synphot.source routines'
+        raise ValueError(message)
     else:
         # assume sourcespec is a string and parse it, trying to interpret as:
         # simple blackbody spectrum
@@ -311,7 +311,7 @@ def read_source(sourcespec):
 
         # else give up
         else:
-            message = 'Source spectrum {} cannot be parsed as input file or pre-defined type (BB, PL, Flat)'.format(sourcespec)
+            message = 'Source spectrum {} cannot be parsed as input file or pre-defined type (BB, PL, Flat, ckmod)'.format(sourcespec)
             raise ValueError(message)
     spec = S.ArraySpectrum(spec['wave'], spec['flux'], name=sourcespec)
     return spec
