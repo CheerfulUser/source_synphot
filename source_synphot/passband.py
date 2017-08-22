@@ -10,6 +10,8 @@ import warnings
 from . import io
 import numpy as np
 import pysynphot as S
+from astropy.cosmology import default_cosmology
+import astropy.units as u
 from collections import OrderedDict
 
 def synflux(spec, pb):
@@ -147,12 +149,15 @@ def synphot_over_redshifts(spec, redshifts, pb, zp=0.):
     :py:func:`source_synphot.passband.synphot`
     """
     mags = []
-    for z in redshifts:
+    c = default_cosmology.get()
+    mu = c.distmod(redshifts)
+    for i, z in enumerate(redshifts):
         if z < 0:
             mags.append(np.nan)
             continue
         this_spec_z = spec.redshift(z)
         mag = synphot(this_spec_z, pb, zp=zp)
+        mag = (mag*u.mag + mu[i]).value
         mags.append(mag)
     mags = np.array(mags)
     return mags
@@ -322,6 +327,7 @@ def load_pbs(pbnames, model_mags, model='AB'):
         try:
             thispb, _ = io.read_passband(pb)
         except Exception as e:
+            print(e)
             message = 'Passband {} not loaded'.format(pb)
             warnings.warn(message, RuntimeWarning)
             continue
