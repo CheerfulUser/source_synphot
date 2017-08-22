@@ -111,7 +111,7 @@ def pre_process_source(source, sourcemag, sourcepb, sourcez, smooth=True):
 
     if not os.path.exists(inspec):
         message = 'Spectrum {} could not be found'.format(inspec)
-        raise valueError(message)
+        raise ValueError(message)
 
     try:
         spec = at.Table.read(inspec, names=('wave','flux'), format='ascii')
