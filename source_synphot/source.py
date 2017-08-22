@@ -88,7 +88,7 @@ def pre_process_source(source, sourcemag, sourcepb, sourcez, smooth=True):
     source_table_file = os.path.join('sources', 'sourcetable.txt')
     source_table_file = io.get_pkgfile(source_table_file)
     source_table = at.Table.read(source_table_file, format='ascii')
-    ind = (source_table['specname'] == sourcespec)
+    ind = (source_table['specname'] == source)
     nmatch = len(source_table['specname'][ind])
     if nmatch == 1:
         # load the file and the info
@@ -96,15 +96,15 @@ def pre_process_source(source, sourcemag, sourcepb, sourcez, smooth=True):
         inspecz   = source_table['redshift'][ind][0]
         inspecmag = source_table['g'][ind][0] # for now, just normalize the g-band mag
     elif nmatch == 0:
-        message = 'Spectrum {} not listed in lookup table'.format(sourcespec)
+        message = 'Spectrum {} not listed in lookup table'.format(source)
         pass
     else:
-        message = 'Spectrum {} not uniquely listed in lookup table'.format(sourcespec)
+        message = 'Spectrum {} not uniquely listed in lookup table'.format(source)
         pass
 
     if inspec is None:
         warnings.warn(message, RuntimeWarning)
-        inspec    = sourcespec
+        inspec    = source
         inspecz   = sourcez
         inspecmag = sourcemag
         inspecpb  = sourcepb
@@ -114,9 +114,9 @@ def pre_process_source(source, sourcemag, sourcepb, sourcez, smooth=True):
         raise valueError(message)
 
     try:
-        spec = at.Table.read(inspec, names=('wave','flux','dflux'), format='ascii')
+        spec = at.Table.read(inspec, names=('wave','flux'), format='ascii')
     except Exception as e:
-        message = 'Could not read file {}'.format(sourcespec)
+        message = 'Could not read file {}'.format(source)
         raise ValueError(message)
 
     if hasattr(inspecpb,'wave') and hasattr(inspecpb, 'throughput'):
@@ -124,7 +124,7 @@ def pre_process_source(source, sourcemag, sourcepb, sourcez, smooth=True):
     else:
         pbs = passband.load_pbs([inspecpb], 0.)
         try:
-            inspecpb = pbs[inspecpb]
+            inspecpb = pbs[inspecpb][0]
         except KeyError as e:
             message = 'Could not load passband {}'.format(inspecpb)
             raise RuntimeError(message)
@@ -152,7 +152,7 @@ def pre_process_source(source, sourcemag, sourcepb, sourcez, smooth=True):
     # and renormalizes - there's some sanity checking for overlaps
     # we can do this without using it and relying on the .passband routines
     try:
-        out = inspec_rest.renorm(sourcemag, 'ABmag', inspecpb[0])
+        out = inspec_rest.renorm(sourcemag, 'ABmag', inspecpb)
     except Exception as e:
         message = 'Could not renormalize spectrum {}'.format(inspec)
         raise RuntimeError(message)
