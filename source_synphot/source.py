@@ -7,6 +7,7 @@ from __future__ import absolute_import
 from __future__ import unicode_literals
 import warnings
 from collections import OrderedDict
+from astropy.cosmology import default_cosmology
 import numpy as np
 import os
 import pysynphot as S
@@ -146,15 +147,24 @@ def pre_process_source(source, sourcemag, sourcepb, sourcez, smooth=True):
         raise ValueError(message)
 
     inspec = S.ArraySpectrum(spec['wave'], spec['flux'], fluxunits='flam')
-    zblue = 1./(1+inspecz) - 1.
-    inspec_rest = inspec.redshift(zblue)
-    # TODO renorm is basic and just calculates dmag = RNval - what the original spectrum's mag is
-    # and renormalizes - there's some sanity checking for overlaps
-    # we can do this without using it and relying on the .passband routines
     try:
-        out = inspec_rest.renorm(sourcemag, 'ABmag', inspecpb)
+        inspec = inspec.renorm(sourcemag, 'ABmag', inspecpb)
+        inspec.convert('flam')
     except Exception as e:
         message = 'Could not renormalize spectrum {}'.format(inspec)
         raise RuntimeError(message)
+
+    if inspecz > 0:
+        zblue = 1./(1+inspecz) - 1.
+        inspec_rest = inspec.redshift(zblue)
+        inspec_rest.convert('flam')
+        c = default_cosmology.get()
+        mu = c.distmod(inspecz)
+        out = inspec_rest*(10.**(0.4*mu.value))
+    else:
+        out = inspec
+    # TODO renorm is basic and just calculates dmag = RNval - what the original spectrum's mag is
+    # and renormalizes - there's some sanity checking for overlaps
+    # we can do this without using it and relying on the .passband routines
     return out
 
