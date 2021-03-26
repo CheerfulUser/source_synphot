@@ -15,4 +15,4 @@ def main(inargs=None):
     pbnames = [x.decode('latin-1') for x in pbnames]
 
     pbs = passband.load_pbs(pbnames, 0.)
-    print(pbs)
+    #print(pbs)

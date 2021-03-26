@@ -1,0 +1,51 @@
+specname                                redshift  g       r       i       z
+10jh/day-22-new-nohost.txt              0.1696    20.5    20.8    21.0    21.47      
+10jh/day254-new-nohost.txt              0.1696    23.0    23.5    23.9    ---
+11af/ps1-11af-spec1-pl-nohost.txt       0.4046    21.6    21.9    ---     ---
+11af/ps1-11af-spec2-pl-nohost.txt       0.4046    21.9    22.1    ---     ---
+11af/ps1-11af-spec3-pl-nohost.txt       0.4046    ---     ---     ---     ---
+11af/ps1-11af-spec4-pl-nohost.txt       0.4046    ---     ---     ---     ---
+wd/g191b2b.dat                          0         ---     ---     ---     --- 
+wd/gd153.dat                            0         ---     ---     ---     --- 
+wd/gd71.dat                             0         ---     ---     ---     --- 
+wd/sdssj010322.dat                      0         ---     ---     ---     --- 
+wd/sdssj022817.dat                      0         ---     ---     ---     --- 
+wd/sdssj024854el.dat                    0         ---     ---     ---     --- 
+wd/sdssj072752.dat                      0         ---     ---     ---     --- 
+wd/sdssj081508.dat                      0         ---     ---     ---     --- 
+wd/sdssj102430.dat                      0         ---     ---     ---     --- 
+wd/sdssj111059.dat                      0         ---     ---     ---     --- 
+wd/sdssj111127.dat                      0         ---     ---     ---     --- 
+wd/sdssj120650.dat                      0         ---     ---     ---     --- 
+wd/sdssj121405.dat                      0         ---     ---     ---     --- 
+wd/sdssj130234.dat                      0         ---     ---     ---     --- 
+wd/sdssj131445.dat                      0         ---     ---     ---     --- 
+wd/sdssj151421.dat                      0         ---     ---     ---     --- 
+wd/sdssj155745.dat                      0         ---     ---     ---     --- 
+wd/sdssj163800.dat                      0         ---     ---     ---     --- 
+wd/sdssj181424.dat                      0         ---     ---     ---     --- 
+wd/sdssj210150.dat                      0         ---     ---     ---     --- 
+wd/sdssj232941.dat                      0         ---     ---     ---     --- 
+wd/sdssj235144.dat                      0         ---     ---     ---     --- 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

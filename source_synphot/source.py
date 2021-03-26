@@ -54,7 +54,7 @@ def load_source(sourcenames):
     return sources
 
 
-def pre_process_source(source, sourcemag, sourcepb, sourcez, smooth=True):
+def pre_process_source(source, sourcemag, sourcepb, sourcez, smooth=True, Renorm=True, svo=False):
     """
     Pre-process a source at some redshift ``sourcez`` back to the rest-frame
     and normalize it to have magnitude ``sourcemag`` in passband ``sourcepb``
@@ -91,11 +91,13 @@ def pre_process_source(source, sourcemag, sourcepb, sourcez, smooth=True):
     source_table = at.Table.read(source_table_file, format='ascii')
     ind = (source_table['specname'] == source)
     nmatch = len(source_table['specname'][ind])
+    
     if nmatch == 1:
         # load the file and the info
-        inspec    = source_table['specname'][ind][0]
+        inspec    = os.path.join('./source_synphot/sources', source_table['specname'][ind][0])
         inspecz   = source_table['redshift'][ind][0]
         inspecmag = source_table['g'][ind][0] # for now, just normalize the g-band mag
+        inspecpb  = sourcepb
     elif nmatch == 0:
         message = 'Spectrum {} not listed in lookup table'.format(source)
         pass
@@ -109,13 +111,21 @@ def pre_process_source(source, sourcemag, sourcepb, sourcez, smooth=True):
         inspecz   = sourcez
         inspecmag = sourcemag
         inspecpb  = sourcepb
+    if svo:
+        inspecpb, _ = io.SVO_passband(sourcepb)  
+    #sourcemag = np.nan
+    if sourcemag is None:
+        #if np.isnan(inspecmag):
+        #    sourcemag = inspecmag
+        #else:
+        sourcemag = float(inspecmag)
 
     if not os.path.exists(inspec):
         message = 'Spectrum {} could not be found'.format(inspec)
         raise ValueError(message)
 
     try:
-        spec = at.Table.read(inspec, names=('wave','flux'), format='ascii')
+        spec = at.Table.read(inspec, format='ascii')
     except Exception as e:
         message = 'Could not read file {}'.format(source)
         raise ValueError(message)
@@ -123,13 +133,14 @@ def pre_process_source(source, sourcemag, sourcepb, sourcez, smooth=True):
     if hasattr(inspecpb,'wave') and hasattr(inspecpb, 'throughput'):
         pass
     else:
+        
         pbs = passband.load_pbs([inspecpb], 0.)
         try:
             inspecpb = pbs[inspecpb][0]
         except KeyError as e:
             message = 'Could not load passband {}'.format(inspecpb)
             raise RuntimeError(message)
-
+    
     try:
         inspecmag = float(inspecmag)
     except (TypeError, ValueError) as e:
@@ -147,12 +158,15 @@ def pre_process_source(source, sourcemag, sourcepb, sourcez, smooth=True):
         raise ValueError(message)
 
     inspec = S.ArraySpectrum(spec['wave'], spec['flux'], fluxunits='flam')
-    try:
-        inspec = inspec.renorm(sourcemag, 'ABmag', inspecpb)
-        inspec.convert('flam')
-    except Exception as e:
-        message = 'Could not renormalize spectrum {}'.format(inspec)
-        raise RuntimeError(message)
+    
+    if Renorm:
+        try:
+            #print('sourcemag',sourcemag)
+            inspec = inspec.renorm(sourcemag, 'ABmag', inspecpb)
+            inspec.convert('flam')
+        except Exception as e:
+            message = 'Could not renormalize spectrum {}'.format(inspec)
+            raise RuntimeError(message)
 
     if inspecz > 0:
         zblue = 1./(1+inspecz) - 1.

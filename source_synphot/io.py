@@ -161,13 +161,14 @@ def read_passband(pb, pbzp=None):
         nmatch_pb = len(pbzpt['passband'][ind])
         if nmatch_pb == 1:
             pbname = pb
+            pb = pbzpt['passband'][ind][0]
             if not np.isnan(pbzpt['ABzpt'][ind][0]):
-                pb = pbzpt['passband'][ind][0]
                 pbzp = pbzpt['ABzpt'][ind][0]
             else:
                 pbzp = np.nan
             pb = os.path.join('passbands', pb)
             try:
+                #print('file to load: ',pb)
                 pb = get_pkgfile(pb)
             except (OSError, IOError) as e:
                 out = None
@@ -203,6 +204,67 @@ def read_passband(pb, pbzp=None):
         message = 'Supplied zeropoint {} could not be interepreted as a float.'.format(zp)
         warnings.warn(message, RuntimeWarning)
         pbzp = np.nan
+    return out, pbzp
+
+
+def SVO_passband(pb, pbzp=None, List = False):
+    """
+    Read a SVO passband using https://github.com/hover2pi/svo_filters.
+
+
+    Parameters
+    ----------
+    pb : str
+        pysynphot obsmode or obsmode listed in `pbzptmag.txt`
+    pbzp : float, optional
+        AB magnitude zeropoint of the passband
+    List : Bool, optional
+        List all filters available through SVO
+
+    Returns
+    -------
+    pb : :py:class:`pysynphot.ArrayBandpass` or :py:class:`pysynphot.obsbandpass.ObsModeBandpass`
+        The passband data.
+        Has ``dtype=[('wave', '<f8'), ('throughput', '<f8')]``
+    pbzp : float
+        passband AB zeropoint - potentially NaN if this was not supplied. If NaN
+        this can be computed assuming an AB source - i.e. a source with a flux
+        density of 3631 jy has magnitude = 0 in the bandpass.
+
+    Notes
+    -----
+        Note that this is a straight read of a single passband from a file. The
+        zeropoint returned is whatever was provided (even if the value is not
+        useful) or NaN. To load the passband and get the correct zeropoint, use
+        :py:func:`source_synphot.passband.load_pbs`
+
+    See Also
+    --------
+    :py:func:`astropy.table.Table.read`
+    :py:func:`pysynphot.ObsBandpass`
+    """
+
+    from svo_filters import svo
+    from astropy import units as u
+
+    if List:
+        print(list(svo.filters()['Band']))
+
+    if pbzp is None:
+        pbzp = np.nan
+
+    try:
+        pbdata = svo.Filter(pb)
+        wav = pbdata.wave.to(u.Angstrom).flatten().value
+        wav, ind = np.unique(wav, return_index=True)
+        out = S.ArrayBandpass(wav, pbdata.throughput.flatten()[ind], waveunits='Angstrom', name=pb)
+    except (OSError,IOError) as e:
+        message = 'No passband called {} in SVO'.format(pb)
+        out = None
+
+    if out is None:
+        raise ValueError(message)
+
     return out, pbzp
 
 
