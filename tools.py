@@ -25,8 +25,6 @@ from scipy.interpolate import UnivariateSpline
 def myround(x, prec=2, base=.5):
     return round(base * round(float(x)/base),prec)
 
-import sys
-sys.path.append(os.path.join(dirname,'../Sigma_clip/'))
 import sigmacut
 
 import warnings
