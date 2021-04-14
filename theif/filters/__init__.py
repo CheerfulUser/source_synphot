@@ -319,7 +319,7 @@ class filter(spectrum):
       if isinstance(specwave, spectrum):
          if not specwave.fluxed: return(num.nan)
       res = self.response(specwave,flux=flux,z=z,zeropad=zeropad)
-      
+      res = 1
       if res <= 0:
          print('no response')
          plt.figure()
