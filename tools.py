@@ -21,6 +21,8 @@ from astropy.stats import sigma_clip
 
 from scipy.interpolate import UnivariateSpline
 
+from R_load import R_val
+
 
 def myround(x, prec=2, base=.5):
     return round(base * round(float(x)/base),prec)
@@ -128,12 +130,15 @@ def Tonry_reduce(Data,plot=False):
     if plot:
         #print(max(dat['rMeanPSFMag'] - dat['iMeanPSFMag']))
         colours = Make_colours(dat,tonry,compare,Extinction = res.x, Tonry = True)
+        rawc = Make_colours(dat,tonry,compare,Extinction = 0, Tonry = True)
         plt.figure()
-        plt.plot(colours['obs r-i'][0],colours['obs g-r'][0],'.')
-        plt.plot(colours['mod r-i'],colours['mod g-r'])
+        plt.plot(rawc['obs r-i'][0],rawc['obs g-r'][0],'r.',label='observed')
+        plt.plot(colours['obs r-i'][0],colours['obs g-r'][0],'x',label='dereddened')
+        plt.plot(colours['mod r-i'],colours['mod g-r'],label='model')
         #print(np.nanmax(colours['obs r-i']))
         plt.xlabel('$r-i$')
         plt.ylabel('$g-r$')
+        plt.legend()
     #clipped_data = data.iloc[clips[0]] 
     return res.x, dat
 
@@ -443,11 +448,16 @@ def Parms_dict(K):
     
     return Params
 
+def line(x, c1, c2): 
+    return c1*x + c2
 
 
-
-def Make_colours(Data, Model, Compare, Extinction = 0, Redden = False,Tonry=False):
-    R = {'g': 3.518, 'r':2.617, 'i':1.971, 'z':1.549, 'y': 1.286, 'k':2.431,'tess':1.809}#'z':1.549} # value from bayestar
+def Make_colours(Data, Model, Compare, Extinction = 0, Redden = False,Tonry=False,R_complex=True):
+    #R = {'g': 3.518, 'r':2.617, 'i':1.971, 'z':1.549, 'y': 1.286, 'k':2.431,'tess':1.809}#'z':1.549} # value from bayestar
+    #R = {'g': 3.62895124, 'r':2.61050894, 'i':1.93460086, 'z':1.52472518, 'y': 1.27382894, 
+    #     'k':2.55730023,'tess':1.84626759}#'z':1.549} # value from bayestar
+    R = {'g': 3.61562687, 'r':2.58602003, 'i':1.90959054, 'z':1.50168735, 
+            'y': 1.25340149, 'k':2.68629375,'tess':1.809}
     colours = {}
     for x,y in Compare:
         colours['obs ' + x] = np.array([Data[x.split('-')[0]+'MeanPSFMag'].values - Data[x.split('-')[1]+'MeanPSFMag'].values,
@@ -474,12 +484,24 @@ def Make_colours(Data, Model, Compare, Extinction = 0, Redden = False,Tonry=Fals
             colours['mod ' + x] = c_range
             colours['mod ' + y] = spl(c_range)
         
-        if Redden:
-            colours['mod ' + x] += Extinction*((R[x.split('-')[0]] - R[x.split('-')[1]]))
-            colours['mod ' + y] += Extinction*(R[y.split('-')[0]] - R[y.split('-')[1]])
+        if R_complex:
+            gr = (Data['gMeanPSFMag'] - Data['rMeanPSFMag']).values - Extinction*(R['g']-R['r'])
+            rx0, e = R_val(x.split('-')[0],gr=gr,ext=Extinction)
+            rx1, e = R_val(x.split('-')[1],gr=gr,ext=Extinction)
+            ry0, e = R_val(y.split('-')[0],gr=gr,ext=Extinction)
+            ry1, e = R_val(y.split('-')[1],gr=gr,ext=Extinction)
         else:
-            colours['obs ' + x] -= Extinction*((R[x.split('-')[0]] - R[x.split('-')[1]]))
-            colours['obs ' + y] -= Extinction*(R[y.split('-')[0]] - R[y.split('-')[1]])
+            rx0 = R[x.split('-')[0]]
+            rx1 = R[x.split('-')[1]]
+            ry0 = R[y.split('-')[0]]
+            ry1 = R[y.split('-')[1]]
+
+        if Redden:
+            colours['mod ' + x] += Extinction*(rx0 - rx1)
+            colours['mod ' + y] += Extinction*(ry0 - ry1)
+        else:
+            colours['obs ' + x] -= Extinction*(rx0 - rx1)
+            colours['obs ' + y] -= Extinction*(ry0 - ry1)
     return colours 
 
 def SLR_residual_multi(K,Data,Model,Compare,Ex,Band=''):
