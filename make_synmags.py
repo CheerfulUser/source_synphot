@@ -77,13 +77,17 @@ def mangle(spec,pbs,mags,plot=False):
     return s
 
 
-def Spec_mags(Models,pbs,av=0,Rv=3.1,Conversion = 1.029):
+def Spec_mags(Models,pbs,av=0,ebv=0,b19=0,Rv=3.1,b19_conv = 1.02123633):
     """
     Generate synthetic magnitudes from the models and passbands added.
     Conversion converts between Ebv and Egr, the Green value is 0.981, but the best fit value
     was found to be 1.029.
     """
-    #a_v = 3.1*(Conversion * ex ) # ex = extinction from Bayestar19 = Egr
+    if b19 > 0:
+        av = Rv*(Conversion * b19) # ex = extinction from Bayestar19 = Egr
+    if ebv > 0:
+        av = Rv*ebv
+
     keys = list(pbs.keys())
     mags = {}
     for key in keys:

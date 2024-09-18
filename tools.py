@@ -35,6 +35,8 @@ from extinction import fm07, fitzpatrick99, apply
 
 import os
 
+from matplotlib import gridspec
+
 def Save_space(Save):
     """
     Creates a pathm if it doesn't already exist.
@@ -46,7 +48,7 @@ def Save_space(Save):
         pass
 
 
-def Tonry_clip(Colours):
+def Tonry_clip(Colours,sig=3):
     """
     Use the Tonry 2012 PS1 splines to sigma clip the observed data.
     """
@@ -64,12 +66,19 @@ def Tonry_clip(Colours):
     dd = np.sqrt(xx**2 + yy**2)
     # return min values for the observation axis
     mins = np.nanmin(dd,axis=1)
+    #mins[mins >.5] = np.nan
     # Sigma clip the distance data
     ind = np.isfinite(mins)
-    sig = sigma_mask(mins[ind])
+    mins[mins > np.nanmedian(mins)+2*np.nanstd(mins)] = np.nan
+    sig = sigma_clip(mins,sig).mask #sigma_mask(mins[ind])
     # return sigma clipped mask
-    ind[ind] = ~sig
-    return ind
+    #plt.figure()
+    #plt.plot(x,mins,'.')
+    #plt.plot(x[sig],mins[sig],'x')
+    #plt.axhline(np.nanmedian(mins)+np.nanstd(mins))
+    ind = ~sig
+    mins[sig] = np.nan
+    return ind, mins
 
 def Tonry_residual(Colours):
     """
@@ -99,7 +108,35 @@ def Tonry_fit(K,Data,Model,Compare):
     res = Tonry_residual(Colours)
     return res
 
-def Tonry_reduce(Data,plot=False):
+
+def locus_plotter(dat,ext,fig = None):
+    tonry = np.loadtxt(os.path.join(dirname,'Tonry_splines.txt'))
+
+    if ax is None:
+        fig = plt.figure()
+    gs = gridspec.GridSpec(4, 1)
+    #print(max(dat['rMeanPSFMag'] - dat['iMeanPSFMag']))
+    colours = Make_colours(dat,tonry,compare,Extinction = ext, Tonry = True)
+    rawc = Make_colours(dat,tonry,compare,Extinction = 0, Tonry = True)
+    dist = Calculate_distance(np.array([colours['obs r-i'][0],colours['obs g-r'][0]]), np.array([tonry[:,0],tonry[:,1]]))
+    
+    fig.add_subplot(gs[0:3,0])
+    plt.plot(rawc['obs r-i'][0],rawc['obs g-r'][0],'r.',label='observed')
+    plt.plot(colours['obs r-i'][0],colours['obs g-r'][0],'x',label='dereddened')
+    plt.plot(colours['mod r-i'],colours['mod g-r'],label='model')
+    #print(np.nanmax(colours['obs r-i']))
+    plt.legend()
+    plt.ylabel('$g-r$')
+
+    fig.add_subplot(gs[3,0])
+    plt.axhline(0,color='k',ls='--')
+    plt.errorbar(colours['obs r-i'][0],dist,yerr=colours['obs g-r'][1],fmt='.')
+    plt.ylabel('Residual (mag)')
+    plt.xlabel('$r-i$')
+    plt.tight_layout()
+    plt.subplots_adjust(hspace=0)
+
+def Tonry_reduce(Data,ebv_guess=0.01,plot=False):
     '''
     Uses the Tonry et al. 2012 PS1 splines to fit dust and find all outliers.
     '''
@@ -113,7 +150,7 @@ def Tonry_reduce(Data,plot=False):
         raise ValueError('No data available')
     for i in range(2):
         if i == 0:
-            k0 = 0.01
+            k0 = ebv_guess
         else:
             k0 = res.x
 
@@ -122,23 +159,35 @@ def Tonry_reduce(Data,plot=False):
         #res = minimize(Tonry_fit,k0,args=(dat,tonry,compare),method='Nelder-Mead')
         
         colours = Make_colours(dat,tonry,compare,Extinction = res.x, Tonry = True)
-        clip = Tonry_clip(colours)
-        clips += [clip]
-        dat = dat.iloc[clip]
+        
+        clip, dist = Tonry_clip(colours,sig=3)
+        #clips += [clip]
+        #dat = dat.iloc[clip]
         #print('Pass ' + str(i+1) + ': '  + str(res.x[0]))
-    clips[0][clips[0]] = clips[1]
+    #clips[0][clips[0]] = clips[1]
     if plot:
+
+        gs = gridspec.GridSpec(4, 1)
         #print(max(dat['rMeanPSFMag'] - dat['iMeanPSFMag']))
         colours = Make_colours(dat,tonry,compare,Extinction = res.x, Tonry = True)
         rawc = Make_colours(dat,tonry,compare,Extinction = 0, Tonry = True)
-        plt.figure()
+        dist = Calculate_distance(np.array([colours['obs r-i'][0],colours['obs g-r'][0]]), np.array([tonry[:,0],tonry[:,1]]))
+        fig = plt.figure()
+        fig.add_subplot(gs[0:3,0])
         plt.plot(rawc['obs r-i'][0],rawc['obs g-r'][0],'r.',label='observed')
         plt.plot(colours['obs r-i'][0],colours['obs g-r'][0],'x',label='dereddened')
         plt.plot(colours['mod r-i'],colours['mod g-r'],label='model')
         #print(np.nanmax(colours['obs r-i']))
-        plt.xlabel('$r-i$')
-        plt.ylabel('$g-r$')
         plt.legend()
+        plt.ylabel('$g-r$')
+        plt.text(0.75,0.25,'E(B-V)='+ str(np.round(res.x,4)),fontsize=12)
+        fig.add_subplot(gs[3,0])
+        plt.axhline(0,color='k',ls='--')
+        plt.errorbar(colours['obs r-i'][0],dist,yerr=colours['obs g-r'][1],fmt='.')
+        plt.ylabel('Residual (mag)')
+        plt.xlabel('$r-i$')
+        plt.tight_layout()
+        plt.subplots_adjust(hspace=0)
     #clipped_data = data.iloc[clips[0]] 
     return res.x, dat
 
@@ -265,10 +314,13 @@ def Dot_prod_error(x,y,Model):
     return proj_err 
 
 def Calculate_distance(data,trend):
-    x = np.zeros((data.shape[1],trend.shape[1])) + data[0,:,np.newaxis]
-    x -= trend[0,np.newaxis,:]
-    y = np.zeros((data.shape[1],trend.shape[1])) + data[1,:,np.newaxis]
-    y -= trend[1,np.newaxis,:]
+    x1 = data[0].flatten()
+    x2 = trend[0].flatten()
+    y1 = data[1].flatten()
+    y2 = trend[1].flatten()
+
+    x = x1[:,np.newaxis] - x2[np.newaxis,:]
+    y = y1[:,np.newaxis] - y2[np.newaxis,:]
 
     dist = np.sqrt(x**2 + y**2)
 
@@ -452,26 +504,31 @@ def line(x, c1, c2):
     return c1*x + c2
 
 
-def Make_colours(Data, Model, Compare, Extinction = 0, Redden = False,Tonry=False,R_complex=True):
+def Make_colours(Data, Model, Compare, Extinction = 0, Redden = False,Tonry=False,R_complex=True,B19=False,SFD=False):
     #R = {'g': 3.518, 'r':2.617, 'i':1.971, 'z':1.549, 'y': 1.286, 'k':2.431,'tess':1.809}#'z':1.549} # value from bayestar
     #R = {'g': 3.62895124, 'r':2.61050894, 'i':1.93460086, 'z':1.52472518, 'y': 1.27382894, 
     #     'k':2.55730023,'tess':1.84626759}#'z':1.549} # value from bayestar
-    R = {'g': 3.61562687, 'r':2.58602003, 'i':1.90959054, 'z':1.50168735, 
-            'y': 1.25340149, 'k':2.68629375,'tess':1.809}
+    if B19:
+        print('B19')
+        R_complex = False
+        R = {'g': 3.518, 'r':2.617, 'i':1.971, 'z':1.549, 'y': 1.286, 'k':2.431,'tess':1.809}#'z':1.549} # value from bayestar
+        #R = {'g': 20, 'r':20.617, 'i':-1.971, 'z':1.549, 'y': 1.286, 'k':2.431,'tess':1.809}#'z':1.549} # value from bayestar
+    elif SFD:
+        R_complex = False
+        #R = {'g': 2.620, 'r':2.792, 'i':2.471, 'z':2.219, 'y': 1.629, 'k':2.431,'tess':1.809}#'z':1.549} # value from bayestar
+        R = {'g': 3.172, 'r':2.271, 'i':1.682, 'z':1.549, 'y': 1.286, 'k':2.431,'tess':1.809}#'z':1.549} # value from bayestar
+    else:
+        R = {'g': 3.61562687, 'r':2.58602003, 'i':1.90959054, 'z':1.50168735, 
+             'y': 1.25340149, 'k':2.68629375,'tess':1.809}
     colours = {}
     for x,y in Compare:
         colours['obs ' + x] = np.array([Data[x.split('-')[0]+'MeanPSFMag'].values - Data[x.split('-')[1]+'MeanPSFMag'].values,
-                                        Data[x.split('-')[0]+'MeanPSFMagErr'].values - Data[x.split('-')[1]+'MeanPSFMagErr'].values])
+                                        np.sqrt((Data[x.split('-')[0]+'MeanPSFMagErr'].values)**2 + (Data[x.split('-')[1]+'MeanPSFMagErr'].values)**2)])
         colours['obs ' + y] = np.array([Data[y.split('-')[0]+'MeanPSFMag'].values - Data[y.split('-')[1]+'MeanPSFMag'].values,
-                                        Data[y.split('-')[0]+'MeanPSFMagErr'].values - Data[y.split('-')[1]+'MeanPSFMagErr'].values])
+                                        np.sqrt((Data[y.split('-')[0]+'MeanPSFMagErr'].values)**2 + (Data[y.split('-')[1]+'MeanPSFMagErr'].values)**2)])
         if Tonry:
             colours['mod ' + x] = Model[:,0]
             colours['mod ' + y] = Model[:,1]
-            # colour cut to remove weird top branch present in C2
-            #if (y == 'g-r'):
-            #    ind = colours['obs g-r'][0,:] > 1.4
-            #    colours['obs g-r'][:,ind] = np.nan
-            #    colours['obs r-i'][:,ind] = np.nan
         else:
 
             xx = Model[x.split('-')[0]] - Model[x.split('-')[1]]
@@ -495,13 +552,14 @@ def Make_colours(Data, Model, Compare, Extinction = 0, Redden = False,Tonry=Fals
             rx1 = R[x.split('-')[1]]
             ry0 = R[y.split('-')[0]]
             ry1 = R[y.split('-')[1]]
+            print(rx0, rx1)
 
         if Redden:
-            colours['mod ' + x] += Extinction*(rx0 - rx1)
-            colours['mod ' + y] += Extinction*(ry0 - ry1)
+            colours['mod ' + x][0] += Extinction*(rx0 - rx1)
+            colours['mod ' + y][0] += Extinction*(ry0 - ry1)
         else:
-            colours['obs ' + x] -= Extinction*(rx0 - rx1)
-            colours['obs ' + y] -= Extinction*(ry0 - ry1)
+            colours['obs ' + x][0] -= Extinction*(rx0 - rx1)
+            colours['obs ' + y][0] -= Extinction*(ry0 - ry1)
     return colours 
 
 def SLR_residual_multi(K,Data,Model,Compare,Ex,Band=''):
