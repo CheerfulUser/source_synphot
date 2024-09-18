@@ -106,3 +106,9 @@ ENV/
 # figures
 *.pdf
 *.png
+
+# text files 
+*.txt
+*.docs
+*.npy
+*.dat
