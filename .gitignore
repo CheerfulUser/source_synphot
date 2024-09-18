@@ -112,3 +112,4 @@ ENV/
 *.docs
 *.npy
 *.dat
+*.csv
